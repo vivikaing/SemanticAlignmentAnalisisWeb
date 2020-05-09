@@ -2,12 +2,17 @@ package com.javaservlets.alignment;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import semantic.aligment.model.CityService;
+import semantic.aligment.model.Domain;
+import semantic.alignment.logic.ReadRdf;
 
 /**
  * Servlet implementation class CityServiceAlignmetServlet
@@ -30,13 +35,21 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String idObjective = request.getParameter("idObjective");
 		System.out.println("The idObjective is: " + idObjective);
+		
+		String realContextPath = getServletContext().getRealPath("");
+		String cityServicesHtml = new String();
+		cityServicesHtml = getCityServices(realContextPath, idObjective);
+		
+		
 		PrintWriter out = response.getWriter();
-		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
-		out.println("<html><body><h2>Semantic Alignment Analysis From City Services</h2>"
-				+ "<table style=\"width:100%\" border=1><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
+		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\"/> \r\n" + "</head>");
+		out.println("<html><body><h3>Semantic Alignment Analysis from City Services</h3>"
+				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
 				+ "<th>Indicators</th><th>Current Value</th><th>Target Value</th><th>Application Services</th></tr>"
-				+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
-				+ "<td>Number of bins not collected per neighbourhood</td><td>5</td><td>0</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
+				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
+				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
+				+ cityServicesHtml
+				+ "</table></body></html>");
 	}
 
 	/**
@@ -46,5 +59,46 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
+	
+	protected String getCityServices(String path, String idObjective) {
+		String cityServicesHtml = new String();
+		ReadRdf rdf = new ReadRdf(path);
+		ArrayList<CityService> cityServices = rdf.findCityServices(idObjective);
+		
+		String domainsHtml = new String();
+			for(int j=0; j < cityServices.size();j++) {
+				ArrayList<Domain> domains = new ArrayList<Domain>();
+				domains = cityServices.get(j).getDomains();
+				for(int k=0; k < domains.size();k++) {
+					if (k==0) {
+						domainsHtml = domains.get(k).getName();
+					}
+					else {
+						domainsHtml = domainsHtml + ", " + domains.get(k).getName();
+					}
+				}
+				
+				cityServicesHtml = cityServicesHtml 
+				+ "<tr><td>"
+				+ domainsHtml
+				+ "</td><td>"
+				+ cityServices.get(j).getName() 
+				+ "</td><td>"
+				+ "Quality of Life Dimension"
+				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getName()
+				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getCurrentValue()
+				+ "</td><td>"
+			    + cityServices.get(j).getIndicator().getTargetValue()
+				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService="
+				+ cityServices.get(j).getId()
+				+ "\">View Details</a></td></tr>";
+				
+				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
+				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
 
+			}	
+		return cityServicesHtml;
+	}
 }

@@ -13,5 +13,13 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="lib/xmltordf-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-2.5.7-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jena-arq-3.14.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-base-3.14.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-core-3.14.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-iri-3.14.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-shaded-guava-3.14.0.jar"/>
+	<classpathentry kind="lib" path="lib/jena-tdb-3.14.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
