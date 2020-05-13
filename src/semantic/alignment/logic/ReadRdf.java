@@ -31,7 +31,7 @@ public class ReadRdf {
 	
 	public Model readXmlModel() {
 		Util util = new Util();
-		Dataset dataset = util.xml2rdf(path + "sample9.archimate");
+		Dataset dataset = util.xml2rdf(path + "sample8.archimate");
 		System.out.println(dataset.toString());
 		Model model = dataset.getDefaultModel();
 		return model;
@@ -152,7 +152,10 @@ public class ReadRdf {
 						}
 						else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
 							indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
-						}		
+						}	
+						else if(indicatorProperties.get(q).getId().contains("qol_dimension")){
+							indicator.setQolDimension(indicatorProperties.get(q).getName());
+						}
 					}
 										
 					relationshipName = "archimate:PerformanceRelationship"; 
@@ -328,7 +331,10 @@ public class ReadRdf {
 				}
 				else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
 					indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
-				}		
+				}
+				else if(indicatorProperties.get(q).getId().contains("qol_dimension")){
+					indicator.setQolDimension(indicatorProperties.get(q).getName());
+				}
 			}
 			
 			relationshipName = "archimate:PerformanceRelationship"; 
@@ -412,6 +418,32 @@ public class ReadRdf {
 			}
 		}
 									
+		return cityServices;
+	}
+	
+	public ArrayList<Objective> findAllObjectives(){
+		ArrayList<Goal> goals = findGoals();
+		ArrayList<Objective> objectives = new ArrayList<Objective>();
+
+		for(int i = 0; i < goals.size(); i++){
+			objectives.addAll(findObjectives(goals.get(i).getId()));
+		}		
+		return objectives;
+	}
+	
+	public ArrayList<CityService> findAllCityServices(){
+		ArrayList<Goal> goals = findGoals();
+		ArrayList<Objective> objectives = new ArrayList<Objective>();
+		ArrayList<CityService> cityServices = new ArrayList<CityService>();
+		
+		for(int i = 0; i < goals.size(); i++){
+			objectives.addAll(findObjectives(goals.get(i).getId()));
+		}
+		
+		for(int j = 0; j < objectives.size(); j++){
+			cityServices.addAll(findCityServices(objectives.get(j).getId()));
+		}
+		
 		return cityServices;
 	}
 }

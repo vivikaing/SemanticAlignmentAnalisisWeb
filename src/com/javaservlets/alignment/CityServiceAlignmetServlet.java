@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import semantic.aligment.model.CityService;
 import semantic.aligment.model.Domain;
 import semantic.alignment.logic.ReadRdf;
+import semantic.alignment.logic.FormatRdf;
 
 /**
  * Servlet implementation class CityServiceAlignmetServlet
@@ -59,11 +60,12 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
-	
-	protected String getCityServices(String path, String idObjective) {
+	public String getCityServices(String path, String idObjective) {
 		String cityServicesHtml = new String();
 		ReadRdf rdf = new ReadRdf(path);
 		ArrayList<CityService> cityServices = rdf.findCityServices(idObjective);
+		
+		//FormatRdf formatRdf = new FormatRdf();
 		
 		String domainsHtml = new String();
 			for(int j=0; j < cityServices.size();j++) {
@@ -84,21 +86,23 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 				+ "</td><td>"
 				+ cityServices.get(j).getName() 
 				+ "</td><td>"
-				+ "Quality of Life Dimension"
+				+ cityServices.get(j).getIndicator().getQolDimension()
 				+ "</td><td>"
 				+ cityServices.get(j).getIndicator().getName()
 				+ "</td><td>"
 				+ cityServices.get(j).getIndicator().getCurrentValue()
+				+ " "
+				+ cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td><td>"
 			    + cityServices.get(j).getIndicator().getTargetValue()
-				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService="
-				+ cityServices.get(j).getId()
-				+ "\">View Details</a></td></tr>";
-				
-				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
-				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
-
+			    + " "
+			    + cityServices.get(j).getIndicator().getUnitOfMeasure()
+				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idObjective="
+				+ idObjective
+				+ "\">View Details</a></td></tr>";	
 			}	
 		return cityServicesHtml;
 	}
+
+	
 }

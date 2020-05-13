@@ -6,6 +6,7 @@ public class Indicator extends Concept{
 	private String targetValue;
 	private String operator;
 	private String unitOfMeasure;
+	private String qolDimension;
 	
 	public Indicator() {
 		super();
@@ -44,6 +45,14 @@ public class Indicator extends Concept{
 
 	public void setUnitOfMeasure(String unitOfMeasure) {
 		this.unitOfMeasure = unitOfMeasure;
+	}
+
+	public String getQolDimension() {
+		return qolDimension;
+	}
+
+	public void setQolDimension(String qolDimension) {
+		this.qolDimension = qolDimension;
 	}
 
 }
