@@ -65,9 +65,6 @@ public class AlignmentServlet extends HttpServlet {
 					+ "<head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 			out.println("<body><h3>Semantic Alignment Analysis from City Goals</h3>"
 					+ "<table><tr><th>Goals</th><th>Objectives</th></tr>"
-					//+ "<tr><td>Goal1</td><td><a href=\"ObjectiveAlignmentServlet?idGoal=1\">View Details</a></td></tr>"
-					//+ "<tr><td>Goal2</td><td><a href=\"ObjectiveAlignmentServlet?idGoal=2\">View Details</a></td></tr>"
-					//+ "<tr><td>Goal3</td><td><a href=\"ObjectiveAlignmentServlet?idGoal=3\">View Details</a></td></tr></table></body></html>");
 					+ goalsHtml
 					+"</table></body></html>");
 			
@@ -78,19 +75,19 @@ public class AlignmentServlet extends HttpServlet {
 			out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 			out.println("<body><h3>Semantic Alignment Analysis from City Objectives</h3>"
 					+ "<table><tr><th>Domains</th><th>Objectives</th><th>City Services</th></tr>"
-					//+ "<tr><td>Education</td><td>Objective1</td><td><a href=\"CityServiceAlignmetServlet?idObjective=1\">View Details</a></tr>"
-					//+ "<tr><td>Mobility</td><td>Objective2</td><td><a href=\"CityServiceAlignmetServlet?idObjective=2\">View Details</a></td></tr>"
-					//+ "<tr><td bgcolor=\"#e8899b\">Livability</td><td>Objective3</td><td><a href=\"CityServiceAlignmetServlet?idObjective=3\">View Details</a></td></tr></table></body></html>");
 					+ objectivesHtml
 					+"</table></body></html>");
 			
 		} else if (typeAnalysis.equals("cityService")) {
+			String cityServicesHtml = new String();
+			cityServicesHtml = getCityServices(realContextPath);
+			
 			out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 			out.println("<body><h3>Semantic Alignment Analysis from City Services</h3>"
 					+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
-					+ "<th>Indicators</th><th>Target Value</th><th>Current Value</th><th>Application Services</th></tr>"
-					+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
-					+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
+					+ "<th>Indicators</th><th>Current Value</th><th>Target Value</th><th>Application Services</th></tr>"
+					+ cityServicesHtml
+					+"</table></body></html>");
 		}
 	}
 	
@@ -115,6 +112,7 @@ public class AlignmentServlet extends HttpServlet {
 		String objectivesHtml = new String();
 		ReadRdf rdf = new ReadRdf(path);
 		ArrayList<Objective> objectives = rdf.findAllObjectives();
+		
 		for(int i=0;i<objectives.size();i++) {
 			ArrayList<CityService> cityServices = new ArrayList<CityService>();
 			cityServices = objectives.get(i).getCityServices();
@@ -144,4 +142,45 @@ public class AlignmentServlet extends HttpServlet {
 		return objectivesHtml;
 	}
 	
+	public String getCityServices(String path) {
+		String cityServicesHtml = new String();
+		ReadRdf rdf = new ReadRdf(path);
+		ArrayList<CityService> cityServices = rdf.findAllCityServices();
+		
+		String domainsHtml = new String();
+			for(int j=0; j < cityServices.size();j++) {
+				ArrayList<Domain> domains = new ArrayList<Domain>();
+				domains = cityServices.get(j).getDomains();
+				for(int k=0; k < domains.size();k++) {
+					if (k==0) {
+						domainsHtml = domains.get(k).getName();
+					}
+					else {
+						domainsHtml = domainsHtml + ", " + domains.get(k).getName();
+					}
+				}
+				
+				cityServicesHtml = cityServicesHtml 
+				+ "<tr><td>"
+				+ domainsHtml
+				+ "</td><td>"
+				+ cityServices.get(j).getName() 
+				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getQolDimension()
+				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getName()
+				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getCurrentValue()
+				+ " "
+				+ cityServices.get(j).getIndicator().getUnitOfMeasure()
+				+ "</td><td>"
+			    + cityServices.get(j).getIndicator().getTargetValue()
+			    + " "
+			    + cityServices.get(j).getIndicator().getUnitOfMeasure()
+				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idObjective="
+				+ cityServices.get(j).getIdObjective()
+				+ "\">View Details</a></td></tr>";	
+			}	
+		return cityServicesHtml;
+	}
 }

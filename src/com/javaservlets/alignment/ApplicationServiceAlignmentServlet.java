@@ -58,23 +58,17 @@ public class ApplicationServiceAlignmentServlet extends HttpServlet {
 		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 		out.println("<body><h3>Semantic Alignment Analysis from City Services</h3>"
 				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
-				+ "<th>Indicators</th><th>Target Value</th><th>Current Value</th></tr>"
+				+ "<th>Indicators</th><th>Current Value</th><th>Target Value</th></tr>"
 				+ cityServicesHtml
 				+ "</table></body></html>");
-				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
-				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td></tr></table></body></html>");
 				
 		
 		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 		out.println("<body><h3>Application Services</h3>"
-				+ "<table><tr><th>Application Services</th><th>QoS</th><th>Target Value</th>"
-				+ "<th>Current Value</th><th>Related Applications</th></tr>"
+				+ "<table><tr><th>Application Services</th><th>Quality of Application Service</th><th>Monitored Value</th>"
+				+ "<th>Target Value</th><th>Related Web Services</th></tr>"
 				+ appServicesHtml
 				+ "</table></body></html>");
-				//+ "<tr><td>Get Bins Fills-Level</td><td>Accuracy</td><td align=\"center\">95%</td>"
-				//+ "<td bgcolor=\"#e8899b\" align=\"center\">70%</td><td>Sensor Bin Web Service</td></tr>"
-				//+ "<tr><td>Get Road Network</td><td>Availability</td><td align=\"center\">98%</td>"
-				//+ "<td align=\"center\">98%</td><td>Geographic Information System</td></tr></table></body></html>");
 	}
 
 	/**
@@ -140,29 +134,21 @@ public class ApplicationServiceAlignmentServlet extends HttpServlet {
 						+ "</td><td>"
 						+ qosAppService.get(n).getName()
 						+ "</td><td>"
-						+ qosAppService.get(n).getTargetValue()
-						+ " "
-						+ qosAppService.get(n).getUnitOfMeasure()
-						+ "</td><td>"
 						+ qosAppService.get(n).getMonitoredValue()
 						+ " "
 						+ qosAppService.get(n).getUnitOfMeasure()
 						+ "</td><td>"
-						+ "Related App"
+						+ qosAppService.get(n).getTargetValue()
+						+ " "
+						+ qosAppService.get(n).getUnitOfMeasure()
+						+ "</td><td>"
+						+ appServices.get(m).getWebService().getName()
 						+ "</td></tr>";	
 					}
-					
-					
-					//+ "<tr><td>Get Bins Fills-Level</td><td>Accuracy</td><td align=\"center\">95%</td>"
-					//+ "<td bgcolor=\"#e8899b\" align=\"center\">70%</td><td>Sensor Bin Web Service</td></tr>"
-					//+ "<tr><td>Get Road Network</td><td>Availability</td><td align=\"center\">98%</td>"
-					//+ "<td align=\"center\">98%</td><td>Geographic Information System</td></tr></table></body></html>");
 				}
 				answerHtml.add(appServicesHtml);
  				answerHtml.add(cityServicesHtml);
 			}	
 		return answerHtml;
 	}
-
-
 }

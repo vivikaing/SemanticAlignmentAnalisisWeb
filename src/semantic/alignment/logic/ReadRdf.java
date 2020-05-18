@@ -18,6 +18,7 @@ import semantic.aligment.model.Goal;
 import semantic.aligment.model.Indicator;
 import semantic.aligment.model.Objective;
 import semantic.aligment.model.QoSAppService;
+import semantic.aligment.model.WebService;
 import semantic.alignment.util.Util;
 
 
@@ -31,7 +32,7 @@ public class ReadRdf {
 	
 	public Model readXmlModel() {
 		Util util = new Util();
-		Dataset dataset = util.xml2rdf(path + "sample8.archimate");
+		Dataset dataset = util.xml2rdf(path + "sample9.archimate");
 		System.out.println(dataset.toString());
 		Model model = dataset.getDefaultModel();
 		return model;
@@ -407,10 +408,25 @@ public class ReadRdf {
 						}
 						
 					}
+					
+					conceptName = "archimate:WebService"; 	
+					relationshipName = "archimate:InterfaceRelationship"; 
+					relType = "target";
+					relType1 = "source";
+					ArrayList<Generic> genericWebServices = new ArrayList<Generic>();
+					genericWebServices = findTriplesGeneric(p, appService.getId(),conceptName, relationshipName, relType, relType1);
+					
+					for(int w = 0; w < genericWebServices.size(); w++) {
+						WebService webService = new WebService();
+						webService.setId(genericWebServices.get(w).getId());
+						webService.setName(genericWebServices.get(w).getName());
+						appService.setWebService(webService);
+					}
+					
 					appService.setQosAppService(qosAppServices);
 					appServices.add(appService);
 				}
-				
+				cityService.setIdObjective(idObjective);
 				cityService.setIndicator(indicator);
 				cityService.setDomains(domains);
 				cityService.setAppServices(appServices);

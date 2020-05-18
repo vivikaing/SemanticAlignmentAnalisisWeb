@@ -10,6 +10,8 @@ public class CityService extends Concept {
 	
 	private Indicator indicator;
 	
+	private String idObjective;
+	
 	public CityService() {
 		super();
 	}
@@ -40,6 +42,14 @@ public class CityService extends Concept {
 
 	public void setIndicator(Indicator indicator) {
 		this.indicator = indicator;
+	}
+
+	public String getIdObjective() {
+		return idObjective;
+	}
+
+	public void setIdObjective(String idObjective) {
+		this.idObjective = idObjective;
 	}
 }
 

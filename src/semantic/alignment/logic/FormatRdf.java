@@ -7,10 +7,10 @@ import semantic.aligment.model.Domain;
 
 public class FormatRdf {
 	
-	public String getCityServices(String path, String idObjective) {
+	public String getCityServices(String path) {
 		String cityServicesHtml = new String();
 		ReadRdf rdf = new ReadRdf(path);
-		ArrayList<CityService> cityServices = rdf.findCityServices(idObjective);
+		ArrayList<CityService> cityServices = rdf.findAllCityServices();
 		
 		String domainsHtml = new String();
 			for(int j=0; j < cityServices.size();j++) {
@@ -43,7 +43,7 @@ public class FormatRdf {
 			    + " "
 			    + cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idObjective="
-				+ idObjective
+				+ cityServices.get(j).getIdObjective()
 				+ "\">View Details</a></td></tr>";	
 			}	
 		return cityServicesHtml;
