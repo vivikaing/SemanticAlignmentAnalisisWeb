@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import semantic.aligment.model.AppService;
 import semantic.aligment.model.CityService;
 import semantic.aligment.model.Domain;
+import semantic.aligment.model.QoLDimension;
 import semantic.aligment.model.QoSAppService;
 import semantic.alignment.logic.ReadRdf;
 
@@ -57,7 +58,7 @@ public class ApplicationServiceAlignmentServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\" /> \r\n" + "</head>");
 		out.println("<body><h3>Semantic Alignment Analysis from City Services</h3>"
-				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
+				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimensions</th>"
 				+ "<th>Indicators</th><th>Current Value</th><th>Target Value</th></tr>"
 				+ cityServicesHtml
 				+ "</table></body></html>");
@@ -101,6 +102,23 @@ public class ApplicationServiceAlignmentServlet extends HttpServlet {
 						domainsHtml = domainsHtml + ", " + domains.get(k).getName();
 					}
 				}
+				
+				ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
+				qolDimensions = cityServices.get(j).getIndicator().getQolDimensions();
+				String qoLDimensionsHtml = new String();
+				for(int l=0; l < qolDimensions.size();l++) {
+					if (l==0) {
+						qoLDimensionsHtml = qolDimensions.get(l).getName();
+					}
+					else {
+						qoLDimensionsHtml = qoLDimensionsHtml + ", " + qolDimensions.get(l).getName();
+					}
+				}
+				
+				String redIndicatorHtml = "</td><td>";
+				if(cityServices.get(j).getIndicator().getRed_indicator() == true) {
+					redIndicatorHtml = "</td><td bgcolor= \"#f55bb5\">";
+				}
 								
 				cityServicesHtml = cityServicesHtml 
 				+ "<tr><td>"
@@ -108,36 +126,45 @@ public class ApplicationServiceAlignmentServlet extends HttpServlet {
 				+ "</td><td>"
 				+ cityServices.get(j).getName() 
 				+ "</td><td>"
-				+ cityServices.get(j).getIndicator().getQolDimension()
+				+ qoLDimensionsHtml
 				+ "</td><td>"
 				+ cityServices.get(j).getIndicator().getName()
-				+ "</td><td>"
+				+ redIndicatorHtml
 				+ cityServices.get(j).getIndicator().getCurrentValue()
 				+ " "
 				+ cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td><td>"
+				+ cityServices.get(j).getIndicator().getOperatorText()
 				+ cityServices.get(j).getIndicator().getTargetValue()
 				+ " "
 			    + cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td></tr>";
 				
+								
 				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
 				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td></tr></table></body></html>");
-				
+								
 				ArrayList<AppService> appServices = cityServices.get(j).getAppServices();
 				for(int m=0; m < appServices.size();m++) {
 					ArrayList<QoSAppService> qosAppService = appServices.get(m).getQosAppService();
 					for(int n=0; n < qosAppService.size();n++) {
+						
+						String redQoSAppServiceHtml = "</td><td>";
+						if(qosAppService.get(n).getRedIndicator() == true) {
+							redQoSAppServiceHtml = "</td><td bgcolor= \"#f55bb5\">";
+						}
+						
 						appServicesHtml = appServicesHtml
 						+ "<tr><td>"
 						+ appServices.get(m).getName()
 						+ "</td><td>"
 						+ qosAppService.get(n).getName()
-						+ "</td><td>"
+						+ redQoSAppServiceHtml
 						+ qosAppService.get(n).getMonitoredValue()
 						+ " "
 						+ qosAppService.get(n).getUnitOfMeasure()
 						+ "</td><td>"
+						+ qosAppService.get(n).getOperatorText()
 						+ qosAppService.get(n).getTargetValue()
 						+ " "
 						+ qosAppService.get(n).getUnitOfMeasure()

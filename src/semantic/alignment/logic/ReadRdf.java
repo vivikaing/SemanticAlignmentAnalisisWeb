@@ -17,6 +17,7 @@ import semantic.aligment.model.Generic;
 import semantic.aligment.model.Goal;
 import semantic.aligment.model.Indicator;
 import semantic.aligment.model.Objective;
+import semantic.aligment.model.QoLDimension;
 import semantic.aligment.model.QoSAppService;
 import semantic.aligment.model.WebService;
 import semantic.alignment.util.Util;
@@ -138,6 +139,11 @@ public class ReadRdf {
 					Indicator indicator = new Indicator();
 					indicator.setId(genericIndicators.get(k).getId());
 					indicator.setName(genericIndicators.get(k).getName());
+					
+					indicator.setTargetValue("");
+					indicator.setCurrentValue("");
+					indicator.setOperator("");
+					indicator.setUnitOfMeasure("");
 										
 					conceptName = "archimate:Indicator"; 
 					ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName); 
@@ -154,10 +160,26 @@ public class ReadRdf {
 						else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
 							indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
 						}	
-						else if(indicatorProperties.get(q).getId().contains("qol_dimension")){
-							indicator.setQolDimension(indicatorProperties.get(q).getName());
-						}
 					}
+					
+					boolean redIndicator = analyseIndicator(indicator.getCurrentValue(),indicator.getTargetValue(),indicator.getOperator());
+					indicator.setRed_indicator(redIndicator);
+					indicator.setOperatorText(convertOperatorToText(indicator.getOperator()));
+						
+					conceptName = "archimate:QualityLifeDimension";
+					relationshipName = "archimate:ImpactRelationship"; 
+					relType = "source"; 
+					relType1 = "target"; 
+					ArrayList<Generic> genericQoLDimensions = new ArrayList<Generic>();
+					genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName,relType, relType1);
+					ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
+					for(int l = 0; l < genericQoLDimensions.size(); l++) {
+						QoLDimension qolDimension = new QoLDimension();
+						qolDimension.setId(genericQoLDimensions.get(l).getId());
+						qolDimension.setName(genericQoLDimensions.get(l).getName());
+						qolDimensions.add(qolDimension);
+					}
+					indicator.setQolDimensions(qolDimensions);
 										
 					relationshipName = "archimate:PerformanceRelationship"; 
 					relType = "source"; 
@@ -318,6 +340,11 @@ public class ReadRdf {
 			indicator.setId(genericIndicators.get(k).getId());
 			indicator.setName(genericIndicators.get(k).getName());
 			
+			indicator.setTargetValue("");
+			indicator.setCurrentValue("");
+			indicator.setOperator("");
+			indicator.setUnitOfMeasure("");
+			
 			conceptName = "archimate:Indicator"; 
 			ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName); 
 			for(int q = 0; q < indicatorProperties.size(); q++) {
@@ -333,10 +360,26 @@ public class ReadRdf {
 				else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
 					indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
 				}
-				else if(indicatorProperties.get(q).getId().contains("qol_dimension")){
-					indicator.setQolDimension(indicatorProperties.get(q).getName());
-				}
 			}
+			
+			boolean redIndicator = analyseIndicator(indicator.getCurrentValue(),indicator.getTargetValue(),indicator.getOperator());
+			indicator.setRed_indicator(redIndicator);
+			indicator.setOperatorText(convertOperatorToText(indicator.getOperator()));
+			
+			conceptName = "archimate:QualityLifeDimension";
+			relationshipName = "archimate:ImpactRelationship"; 
+			relType = "source"; 
+			relType1 = "target"; 
+			ArrayList<Generic> genericQoLDimensions = new ArrayList<Generic>();
+			genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName,relType, relType1);
+			ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
+			for(int l = 0; l < genericQoLDimensions.size(); l++) {
+				QoLDimension qolDimension = new QoLDimension();
+				qolDimension.setId(genericQoLDimensions.get(l).getId());
+				qolDimension.setName(genericQoLDimensions.get(l).getName());
+				qolDimensions.add(qolDimension);
+			}
+			indicator.setQolDimensions(qolDimensions);
 			
 			relationshipName = "archimate:PerformanceRelationship"; 
 			relType = "source"; 
@@ -391,6 +434,11 @@ public class ReadRdf {
 						qosAppService.setName(genericQosAppServices.get(r).getName());
 						qosAppServices.add(qosAppService);
 						
+						qosAppService.setTargetValue("");
+						qosAppService.setMonitoredValue("");
+						qosAppService.setOperator("");
+						qosAppService.setUnitOfMeasure("");
+						
 						ArrayList<Generic> qosProperties = findProperties(p, qosAppService.getId(), conceptName); 
 						for(int q = 0; q < qosProperties.size(); q++) {
 							if(qosProperties.get(q).getId().contains("target_value")){
@@ -407,6 +455,10 @@ public class ReadRdf {
 							}		
 						}
 						
+						boolean redQoSAppService = analyseQoSAppService(qosAppService.getMonitoredValue(),qosAppService.getTargetValue(),qosAppService.getOperator());
+						qosAppService.setRedIndicator(redQoSAppService);
+						qosAppService.setOperatorText(convertOperatorToText(qosAppService.getOperator()));
+
 					}
 					
 					conceptName = "archimate:WebService"; 	
@@ -462,4 +514,131 @@ public class ReadRdf {
 		
 		return cityServices;
 	}
+	
+	public String convertOperatorToText(String comparisonOperator)
+	{
+		String operatorText = "";
+		
+		if (comparisonOperator.trim().equals("<")) {
+			
+			operatorText = "Less than ";
+		}
+		else if (comparisonOperator.trim().equals("<=")) {
+			
+			operatorText = "Less than or equal to ";
+		}
+		else if (comparisonOperator.trim().equals(">")) {
+			
+			operatorText = "Greater than ";
+		}
+		else if (comparisonOperator.trim().equals(">=")) {
+			
+			operatorText = "Greater than or equal to ";
+		}
+		else if (comparisonOperator.trim().equals("=")) {
+			
+			operatorText = "Equal to ";
+		}
+		else if (comparisonOperator.trim().equals("<>")) {
+			
+			operatorText = "Not equal to ";
+		}
+		
+		return operatorText;
+	}
+	
+	public boolean analyseIndicator(String measuredValue, String targetValue, String comparisonOperator)
+	{
+		boolean redIndicator = true;
+		
+		double dMeasuredValue = Double.parseDouble(measuredValue);
+		double dTargetValue = Double.parseDouble(targetValue);
+		
+				
+		if (comparisonOperator.trim().equals("<")) {
+		
+			if(dMeasuredValue < dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("<=")) {
+			
+			if(dMeasuredValue <= dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals(">")) {
+			
+			if(dMeasuredValue > dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals(">=")) {
+			
+			if(dMeasuredValue >= dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("=")) {
+			
+			if(dMeasuredValue == dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("<>")) {
+			
+			if(dMeasuredValue !=  dTargetValue) {
+				redIndicator=false;
+			}
+		}
+		return redIndicator;
+	}
+	
+	public boolean analyseQoSAppService(String monitoredValue, String targetValue, String comparisonOperator)
+	{
+		boolean redQoSAppService = true;
+		
+		double dMeasuredValue = Double.parseDouble(monitoredValue);
+		double dTargetValue = Double.parseDouble(targetValue);
+		
+				
+		if (comparisonOperator.trim().equals("<")) {
+		
+			if(dMeasuredValue < dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("<=")) {
+			
+			if(dMeasuredValue <= dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals(">")) {
+			
+			if(dMeasuredValue > dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals(">=")) {
+			
+			if(dMeasuredValue >= dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("=")) {
+			
+			if(dMeasuredValue == dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		else if (comparisonOperator.trim().equals("<>")) {
+			
+			if(dMeasuredValue !=  dTargetValue) {
+				redQoSAppService=false;
+			}
+		}
+		return redQoSAppService;
+	}
+	
 }

@@ -6,7 +6,9 @@ public class QoSAppService extends Concept {
 	private String monitoredValue;
 	private String targetValue;
 	private String operator;
+	private String operatorText;
 	private String unitOfMeasure;
+	private Boolean redIndicator;
 	
 	
 	public QoSAppService() {
@@ -44,5 +46,21 @@ public class QoSAppService extends Concept {
 
 	public void setUnitOfMeasure(String unitOfMeasure) {
 		this.unitOfMeasure = unitOfMeasure;
+	}
+
+	public Boolean getRedIndicator() {
+		return redIndicator;
+	}
+
+	public void setRedIndicator(Boolean redIndicator) {
+		this.redIndicator = redIndicator;
+	}
+
+	public String getOperatorText() {
+		return operatorText;
+	}
+
+	public void setOperatorText(String operatorText) {
+		this.operatorText = operatorText;
 	}
 }

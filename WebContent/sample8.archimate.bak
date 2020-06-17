@@ -34,7 +34,7 @@
       <property key="target_value" value="0"/>
       <property key="measured_value" value="5"/>
       <property key="unit_of_measure" value="bins"/>
-      <property key="comparison_operator" value="="/>
+      <property key="comparison_operator" value="&lt;"/>
     </element>
   </folder>
   <folder name="Implementation &amp; Migration" id="6d2cf3b9-b07a-4fe4-b151-ede4af75e6f2" type="implementation_migration"/>

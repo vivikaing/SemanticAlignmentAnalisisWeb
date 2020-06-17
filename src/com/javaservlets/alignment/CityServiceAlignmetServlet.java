@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import semantic.aligment.model.CityService;
 import semantic.aligment.model.Domain;
+import semantic.aligment.model.QoLDimension;
 import semantic.alignment.logic.ReadRdf;
 
 /**
@@ -44,8 +45,8 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		out.print("<html><head><link rel=\"stylesheet\" type=\"text/css\" href=\"./css/tableStyle.css\"/> \r\n" + "</head>");
 		out.println("<html><body><h3>Semantic Alignment Analysis from City Services</h3>"
-				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimension</th>"
-				+ "<th>Indicators</th><th>Target Value</th><th>Current Value</th><th>Application Services</th></tr>"
+				+ "<table><tr><th>Domains</th><th>City Services</th><th>Quality of Life Dimensions</th>"
+				+ "<th>Indicators</th><th>Current Value</th><th>Target Value</th><th>Application Services</th></tr>"
 				//+ "<tr><td>Livability</td><td>Waste Management City Service</td><td>Environmental Quality</td>"
 				//+ "<td>Number of bins not collected per neighbourhood</td><td align=\"center\">0</td><td bgcolor=\"#e8899b\" align=\"center\">5</td><td><a href=\"ApplicationServiceAlignmentServlet?idCityService=3\">View Details</a></td></tr></table></body></html>");
 				+ cityServicesHtml
@@ -78,21 +79,39 @@ public class CityServiceAlignmetServlet extends HttpServlet {
 					}
 				}
 				
+				ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
+				qolDimensions = cityServices.get(j).getIndicator().getQolDimensions();
+				String qoLDimensionsHtml = new String();
+				for(int l=0; l < qolDimensions.size();l++) {
+					if (l==0) {
+						qoLDimensionsHtml = qolDimensions.get(l).getName();
+					}
+					else {
+						qoLDimensionsHtml = qoLDimensionsHtml + ", " + qolDimensions.get(l).getName();
+					}
+				}
+				
+				String redIndicatorHtml = "</td><td>";
+				if(cityServices.get(j).getIndicator().getRed_indicator() == true) {
+					redIndicatorHtml = "</td><td bgcolor= \"#f55bb5\">";
+				}
+				
 				cityServicesHtml = cityServicesHtml 
 				+ "<tr><td>"
 				+ domainsHtml
 				+ "</td><td>"
 				+ cityServices.get(j).getName() 
 				+ "</td><td>"
-				+ cityServices.get(j).getIndicator().getQolDimension()
+				+ qoLDimensionsHtml
 				+ "</td><td>"
 				+ cityServices.get(j).getIndicator().getName()
-				+ "</td><td>"
-				+ cityServices.get(j).getIndicator().getTargetValue()
+				+ redIndicatorHtml
+				+ cityServices.get(j).getIndicator().getCurrentValue()
 				+ " "
 				+ cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td><td>"
-			    + cityServices.get(j).getIndicator().getCurrentValue()
+				+ cityServices.get(j).getIndicator().getOperatorText()
+			    + cityServices.get(j).getIndicator().getTargetValue()
 			    + " "
 			    + cityServices.get(j).getIndicator().getUnitOfMeasure()
 				+ "</td><td><a href=\"ApplicationServiceAlignmentServlet?idObjective="
