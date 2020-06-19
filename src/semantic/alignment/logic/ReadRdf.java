@@ -22,15 +22,14 @@ import semantic.aligment.model.QoSAppService;
 import semantic.aligment.model.WebService;
 import semantic.alignment.util.Util;
 
-
 public class ReadRdf {
-	
+
 	private String path = "";
-	
+
 	public ReadRdf(String path) {
 		this.path = path;
 	}
-	
+
 	public Model readXmlModel() {
 		Util util = new Util();
 		Dataset dataset = util.xml2rdf(path + "sample9.archimate");
@@ -38,7 +37,7 @@ public class ReadRdf {
 		Model model = dataset.getDefaultModel();
 		return model;
 	}
-	
+
 	public ArrayList<Goal> findGoals() {
 		Model model = readXmlModel();
 		Property p = model.getProperty("http://www.w3.org/2001/XMLSchema-instance#type");
@@ -46,7 +45,6 @@ public class ReadRdf {
 		ArrayList<String> concepts = new ArrayList<String>();
 		ArrayList<String> objectivesArchiIds = new ArrayList<String>();
 		ArrayList<Goal> goals = new ArrayList<Goal>();
-
 
 		while (iter.hasNext()) {
 			Resource subject = iter.nextResource();
@@ -96,7 +94,7 @@ public class ReadRdf {
 
 					// Print out current goal if the goal has objectives
 					if (objectivesNames.size() > 0) {
-						//System.out.println("Goal: " + goalsIds.get(0) + " " + goalsNames.get(0));
+						// System.out.println("Goal: " + goalsIds.get(0) + " " + goalsNames.get(0));
 						Goal goal = new Goal(goalsIds.get(0), goalsNames.get(0));
 						goals.add(goal);
 					}
@@ -105,128 +103,130 @@ public class ReadRdf {
 		}
 		return goals;
 	}
-	
-	public ArrayList<Objective> findObjectives(String idGoal)
-	{
+
+	public ArrayList<Objective> findObjectives(String idGoal) {
 		Model model = readXmlModel();
 		Property p = model.getProperty("http://www.w3.org/2001/XMLSchema-instance#type");
 		String conceptName = new String();
 		String relationshipName = new String();
 		String relType = new String();
 		String relType1 = new String();
-			
-			conceptName = "archimate:Goal";
-			relationshipName = "archimate:QuantifyRelationship";
+
+		conceptName = "archimate:Goal";
+		relationshipName = "archimate:QuantifyRelationship";
+		relType = "target";
+		relType1 = "source";
+		ArrayList<Generic> genericObjectives = new ArrayList<Generic>();
+		genericObjectives = findTriplesGeneric(p, idGoal, conceptName, relationshipName, relType, relType1);
+
+		ArrayList<Objective> objectives = new ArrayList<Objective>();
+		for (int j = 0; j < genericObjectives.size(); j++) {
+			Objective objective = new Objective();
+			objective.setId(genericObjectives.get(j).getId());
+			objective.setName(genericObjectives.get(j).getName());
+
+			conceptName = "archimate:Objective";
+			relationshipName = "archimate:MeasureRelationship";
 			relType = "target";
 			relType1 = "source";
-			ArrayList<Generic> genericObjectives = new ArrayList<Generic>();
-			genericObjectives = findTriplesGeneric(p, idGoal, conceptName, relationshipName, relType, relType1);
-			
-			ArrayList<Objective> objectives = new ArrayList<Objective>();
-			for(int j = 0; j < genericObjectives.size(); j++){
-				Objective objective = new Objective();
-				objective.setId(genericObjectives.get(j).getId());
-				objective.setName(genericObjectives.get(j).getName());
-				
-				conceptName = "archimate:Objective";
-				relationshipName = "archimate:MeasureRelationship"; 
-				relType = "target"; 
-				relType1 = "source"; 
-				ArrayList<Generic> genericIndicators = new ArrayList<Generic>();
-				genericIndicators = findTriplesGeneric(p, objective.getId(), conceptName, relationshipName,relType, relType1);
-				
-				for(int k = 0; k < genericIndicators.size(); k++){
-					Indicator indicator = new Indicator();
-					indicator.setId(genericIndicators.get(k).getId());
-					indicator.setName(genericIndicators.get(k).getName());
-					
-					indicator.setTargetValue("");
-					indicator.setCurrentValue("");
-					indicator.setOperator("");
-					indicator.setUnitOfMeasure("");
-										
-					conceptName = "archimate:Indicator"; 
-					ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName); 
-					for(int q = 0; q < indicatorProperties.size(); q++) {
-						if(indicatorProperties.get(q).getId().contains("target_value")){
-							indicator.setTargetValue(indicatorProperties.get(q).getName());
-						}
-						else if(indicatorProperties.get(q).getId().contains("measured_value")){
-							indicator.setCurrentValue(indicatorProperties.get(q).getName());
-						}
-						else if(indicatorProperties.get(q).getId().contains("comparison_operator")){
-							indicator.setOperator(indicatorProperties.get(q).getName());
-						}
-						else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
-							indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
-						}	
+			ArrayList<Generic> genericIndicators = new ArrayList<Generic>();
+			genericIndicators = findTriplesGeneric(p, objective.getId(), conceptName, relationshipName, relType,
+					relType1);
+
+			for (int k = 0; k < genericIndicators.size(); k++) {
+				Indicator indicator = new Indicator();
+				indicator.setId(genericIndicators.get(k).getId());
+				indicator.setName(genericIndicators.get(k).getName());
+
+				indicator.setTargetValue("");
+				indicator.setCurrentValue("");
+				indicator.setOperator("");
+				indicator.setUnitOfMeasure("");
+
+				conceptName = "archimate:Indicator";
+				ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName);
+				for (int q = 0; q < indicatorProperties.size(); q++) {
+					if (indicatorProperties.get(q).getId().contains("target_value")) {
+						indicator.setTargetValue(indicatorProperties.get(q).getName());
+					} else if (indicatorProperties.get(q).getId().contains("measured_value")) {
+						indicator.setCurrentValue(indicatorProperties.get(q).getName());
+					} else if (indicatorProperties.get(q).getId().contains("comparison_operator")) {
+						indicator.setOperator(indicatorProperties.get(q).getName());
+					} else if (indicatorProperties.get(q).getId().contains("unit_of_measure")) {
+						indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
 					}
-					
-					boolean redIndicator = analyseIndicator(indicator.getCurrentValue(),indicator.getTargetValue(),indicator.getOperator());
-					indicator.setRed_indicator(redIndicator);
-					indicator.setOperatorText(convertOperatorToText(indicator.getOperator()));
-						
-					conceptName = "archimate:QualityLifeDimension";
-					relationshipName = "archimate:ImpactRelationship"; 
-					relType = "source"; 
-					relType1 = "target"; 
-					ArrayList<Generic> genericQoLDimensions = new ArrayList<Generic>();
-					genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName,relType, relType1);
-					ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
-					for(int l = 0; l < genericQoLDimensions.size(); l++) {
-						QoLDimension qolDimension = new QoLDimension();
-						qolDimension.setId(genericQoLDimensions.get(l).getId());
-						qolDimension.setName(genericQoLDimensions.get(l).getName());
-						qolDimensions.add(qolDimension);
-					}
-					indicator.setQolDimensions(qolDimensions);
-										
-					relationshipName = "archimate:PerformanceRelationship"; 
-					relType = "source"; 
-					relType1 = "target";
-					ArrayList<Generic> genericCityServices = new ArrayList<Generic>();
-					genericCityServices = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType, relType1); 
-					
-					ArrayList<CityService> cityServices = new ArrayList<CityService>();
-					for(int m = 0; m < genericCityServices.size(); m++){
-						CityService cityService = new CityService();
-						cityService.setId(genericCityServices.get(m).getId());
-						cityService.setName(genericCityServices.get(m).getName());
-						
-						conceptName = "archimate:CityService"; 
-						relationshipName = "archimate:BelongingRelationship"; 
-						relType = "source"; 
-						relType1 = "target";
-						ArrayList<Generic> genericDomains = new ArrayList<Generic>();
-						genericDomains = findTriplesGeneric(p, cityService.getId(), conceptName, relationshipName, relType, relType1);
-											
-						ArrayList<Domain> domains = new ArrayList<Domain>();
-						for(int n = 0; n < genericDomains.size(); n++) {
-							Domain domain = new Domain();
-							domain.setId(genericDomains.get(n).getId());
-							domain.setName(genericDomains.get(n).getName());
-							domains.add(domain);
-						}
-						cityService.setDomains(domains);
-						cityServices.add(cityService);						
-					}
-					objective.setIndicator(indicator);
-					objective.setCityServices(cityServices);
 				}
-				objectives.add(objective);
+
+				boolean redIndicator = analyseIndicator(indicator.getCurrentValue(), indicator.getTargetValue(),
+						indicator.getOperator());
+				indicator.setRed_indicator(redIndicator);
+				indicator.setOperatorText(convertOperatorToText(indicator.getOperator()));
+
+				conceptName = "archimate:QualityLifeDimension";
+				relationshipName = "archimate:ImpactRelationship";
+				relType = "source";
+				relType1 = "target";
+				ArrayList<Generic> genericQoLDimensions = new ArrayList<Generic>();
+				genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType,
+						relType1);
+				ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
+				for (int l = 0; l < genericQoLDimensions.size(); l++) {
+					QoLDimension qolDimension = new QoLDimension();
+					qolDimension.setId(genericQoLDimensions.get(l).getId());
+					qolDimension.setName(genericQoLDimensions.get(l).getName());
+					qolDimensions.add(qolDimension);
+				}
+				indicator.setQolDimensions(qolDimensions);
+
+				conceptName = "archimate:Indicator";
+				relationshipName = "archimate:PerformanceRelationship";
+				relType = "source";
+				relType1 = "target";
+				ArrayList<Generic> genericCityServices = new ArrayList<Generic>();
+				genericCityServices = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType,
+						relType1);
+
+				ArrayList<CityService> cityServices = new ArrayList<CityService>();
+				for (int m = 0; m < genericCityServices.size(); m++) {
+					CityService cityService = new CityService();
+					cityService.setId(genericCityServices.get(m).getId());
+					cityService.setName(genericCityServices.get(m).getName());
+
+					conceptName = "archimate:CityService";
+					relationshipName = "archimate:BelongingRelationship";
+					relType = "source";
+					relType1 = "target";
+					ArrayList<Generic> genericDomains = new ArrayList<Generic>();
+					genericDomains = findTriplesGeneric(p, cityService.getId(), conceptName, relationshipName, relType,
+							relType1);
+
+					ArrayList<Domain> domains = new ArrayList<Domain>();
+					for (int n = 0; n < genericDomains.size(); n++) {
+						Domain domain = new Domain();
+						domain.setId(genericDomains.get(n).getId());
+						domain.setName(genericDomains.get(n).getName());
+						domains.add(domain);
+					}
+					cityService.setDomains(domains);
+					cityServices.add(cityService);
+				}
+				objective.setIndicator(indicator);
+				objective.setCityServices(cityServices);
 			}
-					
+			objectives.add(objective);
+		}
+
 		return objectives;
-		
+
 	}
-	public ArrayList<Generic> findTriplesGeneric(Property p, String concept,
-			String conceptName, String relationshipName, String relType, String relType1) {
+
+	public ArrayList<Generic> findTriplesGeneric(Property p, String concept, String conceptName,
+			String relationshipName, String relType, String relType1) {
 		Model model = readXmlModel();
 		ResIterator iter = model.listSubjectsWithProperty(p);
 		ArrayList<String> childArchiIds = new ArrayList<String>();
-		
-		ArrayList<Generic> generics= new ArrayList<Generic>();
-	
+
+		ArrayList<Generic> generics = new ArrayList<Generic>();
 
 		while (iter.hasNext()) {
 			Resource subject = iter.nextResource();
@@ -234,7 +234,7 @@ public class ReadRdf {
 			while (nodes.hasNext()) {
 				RDFNode object = nodes.nextNode();
 				if (object.toString().equals(conceptName)) {
-					//System.out.println("" + subject);
+					// System.out.println("" + subject);
 
 					// 1)
 					// Find Subject from Object to Subject RDF Ids
@@ -252,8 +252,8 @@ public class ReadRdf {
 					// Find Object ArchiMate Ids
 					ArrayList<String> archiId = new ArrayList<String>();
 					archiId = Util.FindObject(model, relType1, childIdswithRel, " :: ");
-					for (int i = 0; i < archiId.size(); i++) {					
-								
+					for (int i = 0; i < archiId.size(); i++) {
+
 						if (childArchiIds.contains("" + archiId.get(i)) == false) {
 							childArchiIds.add(archiId.get(i));
 
@@ -272,7 +272,7 @@ public class ReadRdf {
 							generic.setId(childArchiIds.get(i));
 							generic.setName(childNames.get(0));
 							generics.add(generic);
-							
+
 						}
 					}
 				}
@@ -280,201 +280,203 @@ public class ReadRdf {
 		}
 		return generics;
 	}
-	
-	public ArrayList<Generic> findProperties(Property p, String concept,
-			String conceptName) {
-		
+
+	public ArrayList<Generic> findProperties(Property p, String concept, String conceptName) {
+
 		Model model = readXmlModel();
 		// 1)
-		// Find Subject 
-		ArrayList<Generic> generics= new ArrayList<Generic>();	
+		// Find Subject
+		ArrayList<Generic> generics = new ArrayList<Generic>();
 		ArrayList<String> subjectRdfId = new ArrayList<String>();
 		subjectRdfId = Util.FindSubjectGeneric(model, "id", concept, " :: ");
-		
+
 		// 2)
 		// Find Objects as properties
 		ArrayList<String> childProperties = new ArrayList<String>();
-		childProperties = Util.FindObject(model, "http://acandonorway.github.com/XmlToRdf/ontology.ttl#hasChild", subjectRdfId, " :: ");
+		childProperties = Util.FindObject(model, "http://acandonorway.github.com/XmlToRdf/ontology.ttl#hasChild",
+				subjectRdfId, " :: ");
 
-		for (int i = 0; i < childProperties.size(); i++) {					
-											    
-				// 3)
-				// Find Object: Find Child Keys
-				String childKey = new String();
-				childKey = Util.FindUniqueObject(model, "key", childProperties.get(i), " :: ");
-				
-				// 4)
-				// Find Object: Find Child Values
-				String childValue = new String();
-				childValue = Util.FindUniqueObject(model, "value", childProperties.get(i), " :: ");
-				
-				Generic generic = new Generic();
-				generic.setId(childKey);
-				generic.setName(childValue);
-				generics.add(generic);
-				
-			}
+		for (int i = 0; i < childProperties.size(); i++) {
+
+			// 3)
+			// Find Object: Find Child Keys
+			String childKey = new String();
+			childKey = Util.FindUniqueObject(model, "key", childProperties.get(i), " :: ");
+
+			// 4)
+			// Find Object: Find Child Values
+			String childValue = new String();
+			childValue = Util.FindUniqueObject(model, "value", childProperties.get(i), " :: ");
+
+			Generic generic = new Generic();
+			generic.setId(childKey);
+			generic.setName(childValue);
+			generics.add(generic);
+
+		}
 		return generics;
 	}
-	
-	public ArrayList<CityService> findCityServices(String idObjective)
-	{
+
+	public ArrayList<CityService> findCityServices(String idObjective) {
 		Model model = readXmlModel();
 		Property p = model.getProperty("http://www.w3.org/2001/XMLSchema-instance#type");
 		String conceptName = new String();
 		String relationshipName = new String();
 		String relType = new String();
 		String relType1 = new String();
-							
+
 		conceptName = "archimate:Objective";
-		relationshipName = "archimate:MeasureRelationship"; 
-		relType = "target"; 
-		relType1 = "source"; 
+		relationshipName = "archimate:MeasureRelationship";
+		relType = "target";
+		relType1 = "source";
 		ArrayList<Generic> genericIndicators = new ArrayList<Generic>();
-		genericIndicators = findTriplesGeneric(p, idObjective, conceptName, relationshipName,relType, relType1);
-		
+		genericIndicators = findTriplesGeneric(p, idObjective, conceptName, relationshipName, relType, relType1);
+
 		ArrayList<CityService> cityServices = new ArrayList<CityService>();
 
-		for(int k = 0; k < genericIndicators.size(); k++){
+		for (int k = 0; k < genericIndicators.size(); k++) {
 			Indicator indicator = new Indicator();
 			indicator.setId(genericIndicators.get(k).getId());
 			indicator.setName(genericIndicators.get(k).getName());
-			
+
 			indicator.setTargetValue("");
 			indicator.setCurrentValue("");
 			indicator.setOperator("");
 			indicator.setUnitOfMeasure("");
-			
-			conceptName = "archimate:Indicator"; 
-			ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName); 
-			for(int q = 0; q < indicatorProperties.size(); q++) {
-				if(indicatorProperties.get(q).getId().contains("target_value")){
+
+			conceptName = "archimate:Indicator";
+			ArrayList<Generic> indicatorProperties = findProperties(p, indicator.getId(), conceptName);
+			for (int q = 0; q < indicatorProperties.size(); q++) {
+				if (indicatorProperties.get(q).getId().contains("target_value")) {
 					indicator.setTargetValue(indicatorProperties.get(q).getName());
-				}
-				else if(indicatorProperties.get(q).getId().contains("measured_value")){
+				} else if (indicatorProperties.get(q).getId().contains("measured_value")) {
 					indicator.setCurrentValue(indicatorProperties.get(q).getName());
-				}
-				else if(indicatorProperties.get(q).getId().contains("comparison_operator")){
+				} else if (indicatorProperties.get(q).getId().contains("comparison_operator")) {
 					indicator.setOperator(indicatorProperties.get(q).getName());
-				}
-				else if(indicatorProperties.get(q).getId().contains("unit_of_measure")){
+				} else if (indicatorProperties.get(q).getId().contains("unit_of_measure")) {
 					indicator.setUnitOfMeasure(indicatorProperties.get(q).getName());
 				}
 			}
-			
-			boolean redIndicator = analyseIndicator(indicator.getCurrentValue(),indicator.getTargetValue(),indicator.getOperator());
+
+			boolean redIndicator = analyseIndicator(indicator.getCurrentValue(), indicator.getTargetValue(),
+					indicator.getOperator());
 			indicator.setRed_indicator(redIndicator);
 			indicator.setOperatorText(convertOperatorToText(indicator.getOperator()));
-			
+
 			conceptName = "archimate:QualityLifeDimension";
-			relationshipName = "archimate:ImpactRelationship"; 
-			relType = "source"; 
-			relType1 = "target"; 
+			relationshipName = "archimate:ImpactRelationship";
+			relType = "source";
+			relType1 = "target";
 			ArrayList<Generic> genericQoLDimensions = new ArrayList<Generic>();
-			genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName,relType, relType1);
+			genericQoLDimensions = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType,
+					relType1);
 			ArrayList<QoLDimension> qolDimensions = new ArrayList<QoLDimension>();
-			for(int l = 0; l < genericQoLDimensions.size(); l++) {
+			for (int l = 0; l < genericQoLDimensions.size(); l++) {
 				QoLDimension qolDimension = new QoLDimension();
 				qolDimension.setId(genericQoLDimensions.get(l).getId());
 				qolDimension.setName(genericQoLDimensions.get(l).getName());
 				qolDimensions.add(qolDimension);
 			}
 			indicator.setQolDimensions(qolDimensions);
-			
-			relationshipName = "archimate:PerformanceRelationship"; 
-			relType = "source"; 
+
+			conceptName = "archimate:Indicator";
+			relationshipName = "archimate:PerformanceRelationship";
+			relType = "source";
 			relType1 = "target";
 			ArrayList<Generic> genericCityServices = new ArrayList<Generic>();
-			genericCityServices = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType, relType1); 
-			
-			for(int m = 0; m < genericCityServices.size(); m++){
+			genericCityServices = findTriplesGeneric(p, indicator.getId(), conceptName, relationshipName, relType,
+					relType1);
+
+			for (int m = 0; m < genericCityServices.size(); m++) {
 				CityService cityService = new CityService();
 				cityService.setId(genericCityServices.get(m).getId());
 				cityService.setName(genericCityServices.get(m).getName());
-				
-				conceptName = "archimate:CityService"; 
-				relationshipName = "archimate:BelongingRelationship"; 
-				relType = "source"; 
+
+				conceptName = "archimate:CityService";
+				relationshipName = "archimate:BelongingRelationship";
+				relType = "source";
 				relType1 = "target";
 				ArrayList<Generic> genericDomains = new ArrayList<Generic>();
-				genericDomains = findTriplesGeneric(p, cityService.getId(), conceptName, relationshipName, relType, relType1);
-									
+				genericDomains = findTriplesGeneric(p, cityService.getId(), conceptName, relationshipName, relType,
+						relType1);
+
 				ArrayList<Domain> domains = new ArrayList<Domain>();
-				for(int n = 0; n < genericDomains.size(); n++) {
+				for (int n = 0; n < genericDomains.size(); n++) {
 					Domain domain = new Domain();
 					domain.setId(genericDomains.get(n).getId());
 					domain.setName(genericDomains.get(n).getName());
 					domains.add(domain);
 				}
-				
-				conceptName = "archimate:ApplicationService"; 
-				relationshipName = "archimate:AutomateRelationship"; 
+
+				conceptName = "archimate:ApplicationService";
+				relationshipName = "archimate:AutomateRelationship";
 				relType = "target";
 				relType1 = "source";
 				ArrayList<Generic> genericAppServices = new ArrayList<Generic>();
-				genericAppServices = findTriplesGeneric(p, cityService.getId(),conceptName, relationshipName, relType, relType1);
-				  				
+				genericAppServices = findTriplesGeneric(p, cityService.getId(), conceptName, relationshipName, relType,
+						relType1);
+
 				ArrayList<AppService> appServices = new ArrayList<AppService>();
-				for(int s = 0; s < genericAppServices.size(); s++) {
+				for (int s = 0; s < genericAppServices.size(); s++) {
 					AppService appService = new AppService();
 					appService.setId(genericAppServices.get(s).getId());
 					appService.setName(genericAppServices.get(s).getName());
-					
-					conceptName = "archimate:QualityApplicationService"; 	
-					relationshipName = "archimate:MeetRelationship"; 
+
+					conceptName = "archimate:QualityApplicationService";
+					relationshipName = "archimate:MeetRelationship";
 					relType = "source";
 					relType1 = "target";
 					ArrayList<Generic> genericQosAppServices = new ArrayList<Generic>();
-					genericQosAppServices = findTriplesGeneric(p, appService.getId(),conceptName, relationshipName, relType, relType1);
-					
+					genericQosAppServices = findTriplesGeneric(p, appService.getId(), conceptName, relationshipName,
+							relType, relType1);
+
 					ArrayList<QoSAppService> qosAppServices = new ArrayList<QoSAppService>();
-					for(int r = 0; r < genericQosAppServices.size(); r++) {
+					for (int r = 0; r < genericQosAppServices.size(); r++) {
 						QoSAppService qosAppService = new QoSAppService();
 						qosAppService.setId(genericQosAppServices.get(r).getId());
 						qosAppService.setName(genericQosAppServices.get(r).getName());
 						qosAppServices.add(qosAppService);
-						
+
 						qosAppService.setTargetValue("");
 						qosAppService.setMonitoredValue("");
 						qosAppService.setOperator("");
 						qosAppService.setUnitOfMeasure("");
-						
-						ArrayList<Generic> qosProperties = findProperties(p, qosAppService.getId(), conceptName); 
-						for(int q = 0; q < qosProperties.size(); q++) {
-							if(qosProperties.get(q).getId().contains("target_value")){
+
+						ArrayList<Generic> qosProperties = findProperties(p, qosAppService.getId(), conceptName);
+						for (int q = 0; q < qosProperties.size(); q++) {
+							if (qosProperties.get(q).getId().contains("target_value")) {
 								qosAppService.setTargetValue(qosProperties.get(q).getName());
-							}
-							else if(qosProperties.get(q).getId().contains("monitored_value")){
+							} else if (qosProperties.get(q).getId().contains("monitored_value")) {
 								qosAppService.setMonitoredValue(qosProperties.get(q).getName());
-							}
-							else if(qosProperties.get(q).getId().contains("comparison_operator")){
+							} else if (qosProperties.get(q).getId().contains("comparison_operator")) {
 								qosAppService.setOperator(qosProperties.get(q).getName());
-							}
-							else if(qosProperties.get(q).getId().contains("unit_of_measure")){
+							} else if (qosProperties.get(q).getId().contains("unit_of_measure")) {
 								qosAppService.setUnitOfMeasure(qosProperties.get(q).getName());
-							}		
+							}
 						}
-						
-						boolean redQoSAppService = analyseQoSAppService(qosAppService.getMonitoredValue(),qosAppService.getTargetValue(),qosAppService.getOperator());
+
+						boolean redQoSAppService = analyseQoSAppService(qosAppService.getMonitoredValue(),
+								qosAppService.getTargetValue(), qosAppService.getOperator());
 						qosAppService.setRedIndicator(redQoSAppService);
 						qosAppService.setOperatorText(convertOperatorToText(qosAppService.getOperator()));
 
 					}
-					
-					conceptName = "archimate:WebService"; 	
-					relationshipName = "archimate:InterfaceRelationship"; 
+
+					conceptName = "archimate:WebService";
+					relationshipName = "archimate:InterfaceRelationship";
 					relType = "target";
 					relType1 = "source";
 					ArrayList<Generic> genericWebServices = new ArrayList<Generic>();
-					genericWebServices = findTriplesGeneric(p, appService.getId(),conceptName, relationshipName, relType, relType1);
-					
-					for(int w = 0; w < genericWebServices.size(); w++) {
+					genericWebServices = findTriplesGeneric(p, appService.getId(), conceptName, relationshipName,
+							relType, relType1);
+
+					for (int w = 0; w < genericWebServices.size(); w++) {
 						WebService webService = new WebService();
 						webService.setId(genericWebServices.get(w).getId());
 						webService.setName(genericWebServices.get(w).getName());
 						appService.setWebService(webService);
 					}
-					
+
 					appService.setQosAppService(qosAppServices);
 					appServices.add(appService);
 				}
@@ -482,163 +484,154 @@ public class ReadRdf {
 				cityService.setIndicator(indicator);
 				cityService.setDomains(domains);
 				cityService.setAppServices(appServices);
-				cityServices.add(cityService);	
+				cityServices.add(cityService);
 			}
 		}
-									
+
 		return cityServices;
 	}
-	
-	public ArrayList<Objective> findAllObjectives(){
+
+	public ArrayList<Objective> findAllObjectives() {
 		ArrayList<Goal> goals = findGoals();
 		ArrayList<Objective> objectives = new ArrayList<Objective>();
 
-		for(int i = 0; i < goals.size(); i++){
+		for (int i = 0; i < goals.size(); i++) {
 			objectives.addAll(findObjectives(goals.get(i).getId()));
-		}		
+		}
 		return objectives;
 	}
-	
-	public ArrayList<CityService> findAllCityServices(){
+
+	public ArrayList<CityService> findAllCityServices() {
 		ArrayList<Goal> goals = findGoals();
 		ArrayList<Objective> objectives = new ArrayList<Objective>();
 		ArrayList<CityService> cityServices = new ArrayList<CityService>();
-		
-		for(int i = 0; i < goals.size(); i++){
+
+		for (int i = 0; i < goals.size(); i++) {
 			objectives.addAll(findObjectives(goals.get(i).getId()));
 		}
-		
-		for(int j = 0; j < objectives.size(); j++){
+
+		for (int j = 0; j < objectives.size(); j++) {
 			cityServices.addAll(findCityServices(objectives.get(j).getId()));
 		}
-		
+
 		return cityServices;
 	}
-	
-	public String convertOperatorToText(String comparisonOperator)
-	{
+
+	public String convertOperatorToText(String comparisonOperator) {
 		String operatorText = "";
-		
+
 		if (comparisonOperator.trim().equals("<")) {
-			
+
 			operatorText = "Less than ";
-		}
-		else if (comparisonOperator.trim().equals("<=")) {
-			
+		} else if (comparisonOperator.trim().equals("<=")) {
+
 			operatorText = "Less than or equal to ";
-		}
-		else if (comparisonOperator.trim().equals(">")) {
-			
+		} else if (comparisonOperator.trim().equals(">")) {
+
 			operatorText = "Greater than ";
-		}
-		else if (comparisonOperator.trim().equals(">=")) {
-			
+		} else if (comparisonOperator.trim().equals(">=")) {
+
 			operatorText = "Greater than or equal to ";
-		}
-		else if (comparisonOperator.trim().equals("=")) {
-			
+		} else if (comparisonOperator.trim().equals("=")) {
+
 			operatorText = "Equal to ";
-		}
-		else if (comparisonOperator.trim().equals("<>")) {
-			
+		} else if (comparisonOperator.trim().equals("<>")) {
+
 			operatorText = "Not equal to ";
 		}
-		
+
 		return operatorText;
 	}
-	
-	public boolean analyseIndicator(String measuredValue, String targetValue, String comparisonOperator)
-	{
+
+	public boolean analyseIndicator(String measuredValue, String targetValue, String comparisonOperator) {
 		boolean redIndicator = true;
-		
-		double dMeasuredValue = Double.parseDouble(measuredValue);
-		double dTargetValue = Double.parseDouble(targetValue);
-		
-				
-		if (comparisonOperator.trim().equals("<")) {
-		
-			if(dMeasuredValue < dTargetValue) {
-				redIndicator=false;
+
+		if (measuredValue != null && measuredValue.length() > 0) {
+			if (targetValue != null && targetValue.length() > 0) {
+				if (comparisonOperator != null && comparisonOperator.length() > 0) {
+					try {
+						double dMeasuredValue = Double.parseDouble(measuredValue);
+						double dTargetValue = Double.parseDouble(targetValue);
+
+						if (comparisonOperator.trim().equals("<")) {
+
+							if (dMeasuredValue < dTargetValue) {
+								redIndicator = false;
+							}
+						} else if (comparisonOperator.trim().equals("<=")) {
+
+							if (dMeasuredValue <= dTargetValue) {
+								redIndicator = false;
+							}
+						} else if (comparisonOperator.trim().equals(">")) {
+
+							if (dMeasuredValue > dTargetValue) {
+								redIndicator = false;
+							}
+						} else if (comparisonOperator.trim().equals(">=")) {
+
+							if (dMeasuredValue >= dTargetValue) {
+								redIndicator = false;
+							}
+						} else if (comparisonOperator.trim().equals("=")) {
+
+							if (dMeasuredValue == dTargetValue) {
+								redIndicator = false;
+							}
+						} else if (comparisonOperator.trim().equals("<>")) {
+
+							if (dMeasuredValue != dTargetValue) {
+								redIndicator = false;
+							}
+						}
+					} catch (Exception e) {
+						return redIndicator; 
+					}
+				}
 			}
 		}
-		else if (comparisonOperator.trim().equals("<=")) {
-			
-			if(dMeasuredValue <= dTargetValue) {
-				redIndicator=false;
-			}
-		}
-		else if (comparisonOperator.trim().equals(">")) {
-			
-			if(dMeasuredValue > dTargetValue) {
-				redIndicator=false;
-			}
-		}
-		else if (comparisonOperator.trim().equals(">=")) {
-			
-			if(dMeasuredValue >= dTargetValue) {
-				redIndicator=false;
-			}
-		}
-		else if (comparisonOperator.trim().equals("=")) {
-			
-			if(dMeasuredValue == dTargetValue) {
-				redIndicator=false;
-			}
-		}
-		else if (comparisonOperator.trim().equals("<>")) {
-			
-			if(dMeasuredValue !=  dTargetValue) {
-				redIndicator=false;
-			}
-		}
+
 		return redIndicator;
 	}
-	
-	public boolean analyseQoSAppService(String monitoredValue, String targetValue, String comparisonOperator)
-	{
+
+	public boolean analyseQoSAppService(String monitoredValue, String targetValue, String comparisonOperator) {
 		boolean redQoSAppService = true;
-		
+
 		double dMeasuredValue = Double.parseDouble(monitoredValue);
 		double dTargetValue = Double.parseDouble(targetValue);
-		
-				
+
 		if (comparisonOperator.trim().equals("<")) {
-		
-			if(dMeasuredValue < dTargetValue) {
-				redQoSAppService=false;
+
+			if (dMeasuredValue < dTargetValue) {
+				redQoSAppService = false;
 			}
-		}
-		else if (comparisonOperator.trim().equals("<=")) {
-			
-			if(dMeasuredValue <= dTargetValue) {
-				redQoSAppService=false;
+		} else if (comparisonOperator.trim().equals("<=")) {
+
+			if (dMeasuredValue <= dTargetValue) {
+				redQoSAppService = false;
 			}
-		}
-		else if (comparisonOperator.trim().equals(">")) {
-			
-			if(dMeasuredValue > dTargetValue) {
-				redQoSAppService=false;
+		} else if (comparisonOperator.trim().equals(">")) {
+
+			if (dMeasuredValue > dTargetValue) {
+				redQoSAppService = false;
 			}
-		}
-		else if (comparisonOperator.trim().equals(">=")) {
-			
-			if(dMeasuredValue >= dTargetValue) {
-				redQoSAppService=false;
+		} else if (comparisonOperator.trim().equals(">=")) {
+
+			if (dMeasuredValue >= dTargetValue) {
+				redQoSAppService = false;
 			}
-		}
-		else if (comparisonOperator.trim().equals("=")) {
-			
-			if(dMeasuredValue == dTargetValue) {
-				redQoSAppService=false;
+		} else if (comparisonOperator.trim().equals("=")) {
+
+			if (dMeasuredValue == dTargetValue) {
+				redQoSAppService = false;
 			}
-		}
-		else if (comparisonOperator.trim().equals("<>")) {
-			
-			if(dMeasuredValue !=  dTargetValue) {
-				redQoSAppService=false;
+		} else if (comparisonOperator.trim().equals("<>")) {
+
+			if (dMeasuredValue != dTargetValue) {
+				redQoSAppService = false;
 			}
 		}
 		return redQoSAppService;
 	}
-	
+
 }

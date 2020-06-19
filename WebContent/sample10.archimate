@@ -16,7 +16,6 @@
     <element xsi:type="archimate:Goal" name="Goal 1" id="6f2b70ed-2e99-470c-8ab1-98ea9e058a17"/>
     <element xsi:type="archimate:Objective" name="Objective 1" id="f7ecdbc8-065c-48fc-9517-182e461a69eb"/>
     <element xsi:type="archimate:Indicator" name="Indicator 1" id="47efc4f1-cea2-4b8d-ad21-8d86961ffc6f"/>
-    <element xsi:type="archimate:Driver" name="Driver" id="46c460e7-ef36-4aa8-9180-9ac60e6409d8"/>
   </folder>
   <folder name="Implementation &amp; Migration" id="8cfee5da-3a2a-4fa5-8c31-3656120de37b" type="implementation_migration"/>
   <folder name="Other" id="d971b474-3008-40da-8f68-a8045439c784" type="other">
@@ -78,9 +77,6 @@
       </child>
       <child xsi:type="archimate:DiagramObject" id="7ce24da5-efbb-4205-b068-fb499d770883" targetConnections="27cb41f2-29c7-4d6d-aadf-f6c355056f11" textAlignment="1" archimateElement="bfa2e837-fd6e-46d0-bc50-69af4eeedc63">
         <bounds x="36" y="138" width="168" height="67"/>
-      </child>
-      <child xsi:type="archimate:DiagramObject" id="52f51010-72b4-4f3e-9461-b5e3df16178d" archimateElement="46c460e7-ef36-4aa8-9180-9ac60e6409d8">
-        <bounds x="660" y="26" width="120" height="55"/>
       </child>
       <child xsi:type="archimate:DiagramObject" id="35a6e09d-b22a-4dca-8ae5-25868e7e7ac1" targetConnections="0f14bd42-0668-478b-9d8d-7419b56a24d2" archimateElement="f7044a8c-8720-43f0-822d-496c11314bb3">
         <bounds x="300" y="288" width="120" height="55"/>
