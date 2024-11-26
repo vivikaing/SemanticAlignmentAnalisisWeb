@@ -1,4 +1,4 @@
-# Semantic Algiment Analyser
+# Semantic Alignment Analyser
 
 This application examines and analyses the alignment between the service and information layers in Smart City architectures to support Smart City strategies by using semantic analysis. 
 This analysis uses a top-down Enterprise Architecture (EA) approach starting with city goals and objectives, and ending up in city services implementation details. 
